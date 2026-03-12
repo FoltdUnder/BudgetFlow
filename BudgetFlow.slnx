@@ -1,2 +1,11 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BudgetFlow.Api/BudgetFlow.Api.csproj" />
+    <Project Path="src/BudgetFlow.Application/BudgetFlow.Application.csproj" />
+    <Project Path="src/BudgetFlow.Domain/BudgetFlow.Domain.csproj" />
+    <Project Path="src/BudgetFlow.Infrastructure/BudgetFlow.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BudgetFlow.Tests/BudgetFlow.Tests.csproj" />
+  </Folder>
 </Solution>
