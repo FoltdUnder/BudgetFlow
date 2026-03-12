@@ -18,4 +18,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BudgetFlow.Application\BudgetFlow.Application.csproj" />
+    <ProjectReference Include="..\..\src\BudgetFlow.Domain\BudgetFlow.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
