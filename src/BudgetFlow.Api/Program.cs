@@ -1,4 +1,5 @@
 using BudgetFlow.Infrastructure;
+using BudgetFlow.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// services
+builder.Services.AddControllers();
+
 var app = builder.Build();
+
+app.UseGlobalExceptionMiddleware();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
