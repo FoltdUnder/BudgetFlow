@@ -1,0 +1,35 @@
+services:
+  budgetflow.api:
+    build:
+      context: .
+      dockerfile: src/BudgetFlow.Api/Dockerfile
+    container_name: budgetflow-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=budgetflow.db;Port=5432;Database=budgetflow;Username=postgres;Password=postgres
+    depends_on:
+      budgetflow.db:
+        condition: service_healthy
+
+  budgetflow.db:
+    image: postgres:17
+    container_name: budgetflow-db
+    environment:
+      POSTGRES_DB: budgetflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - budgetflow-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d budgetflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  budgetflow-postgres-data:
