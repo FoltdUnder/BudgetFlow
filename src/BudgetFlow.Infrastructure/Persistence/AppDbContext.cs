@@ -1,3 +1,4 @@
+using BudgetFlow.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetFlow.Infrastructure.Persistence;
@@ -8,4 +9,6 @@ public sealed class AppDbContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<User> Users => Set<User>();
 }
