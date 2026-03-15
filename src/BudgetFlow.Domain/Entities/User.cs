@@ -2,6 +2,7 @@ namespace BudgetFlow.Domain.Entities;
 
 public sealed class User
 {
+    public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
     public Guid Id { get; private set; } = Guid.NewGuid();
 
     public string FullName { get; private set; } = string.Empty;
@@ -20,11 +21,10 @@ public sealed class User
     {
     }
 
-    public User(string fullName, string email, string passwordHash, string role = Roles.User)
+    public User(string fullName, string email, string role = Roles.User)
     {
         FullName = fullName;
         Email = email;
-        PasswordHash = passwordHash;
         Role = role;
     }
 

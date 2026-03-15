@@ -1,6 +1,13 @@
 using BudgetFlow.Infrastructure;
+using BudgetFlow.Application.Common.Interfaces;
 using BudgetFlow.Api.Middleware;
 using Serilog;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
+using BudgetFlow.Infrastructure.Auth;
+using BudgetFlow.Domain.Entities;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -16,6 +23,41 @@ try
     builder.Services.AddOpenApi();
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddControllers();
+
+    builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection(JwtOptions.SectionName));
+
+    var jwtSection = builder.Configuration.GetSection(JwtOptions.SectionName);
+    var jwtOptions = jwtSection.Get<JwtOptions>() 
+                    ?? throw new InvalidOperationException("Jwt settings are missing.");
+
+
+    builder.Services.AddScoped<ITokenService, TokenService>();
+    builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtOptions.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = jwtOptions.Audience,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtOptions.Key)),
+
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+
+    builder.Services.AddAuthorization();
 
     var app = builder.Build();
 
@@ -35,6 +77,9 @@ try
     app.UseHttpsRedirection();
 
     app.MapControllers();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     app.Run();
 }

@@ -9,4 +9,8 @@ Add migrations
     dotnet ef migrations add {migration_name} --project src/BudgetFlow.Infrastructure --startup-project src/BudgetFlow.Api
 
 update db
-    $ dotnet ef database update --project src/BudgetFlow.Infrastructure --startup-project src/BudgetFlow.Api
+    dotnet ef database update --project src/BudgetFlow.Infrastructure --startup-project src/BudgetFlow.Api
+
+drop db
+    dotnet ef database drop --project src/BudgetFlow.Infrastructure --startup-project src/BudgetFlow.Api
+
