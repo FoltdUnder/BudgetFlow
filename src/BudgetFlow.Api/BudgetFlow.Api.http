@@ -1,11 +1,11 @@
 @BudgetFlow.Api_HostAddress = http://localhost:8080
 
 ### Register
-POST http://localhost:8080/api/auth/register
+POST {@BudgetFlow.Api_HostAddress}/api/auth/register
 Content-Type: application/json
 
 {
-  "Email": "somehelp@gmail.com",
+  "Email": "somehelp22@gmail.com",
   "FullName": "Jora Pop",
   "Password": "7878"
 }

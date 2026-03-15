@@ -6,11 +6,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BudgetFlow.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class fixmigration : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FullName = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    IsBlocked = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_users", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "refresh_tokens",
                 columns: table => new
@@ -26,9 +43,9 @@ namespace BudgetFlow.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_refresh_tokens", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_refresh_tokens_Users_UserId",
+                        name: "FK_refresh_tokens_users_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -43,6 +60,12 @@ namespace BudgetFlow.Infrastructure.Migrations
                 name: "IX_refresh_tokens_UserId",
                 table: "refresh_tokens",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_users_Email",
+                table: "users",
+                column: "Email",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -50,6 +73,9 @@ namespace BudgetFlow.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "refresh_tokens");
+
+            migrationBuilder.DropTable(
+                name: "users");
         }
     }
 }
