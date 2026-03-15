@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 using BudgetFlow.Api.Common;
 using BudgetFlow.Application.Common.Exceptions;
