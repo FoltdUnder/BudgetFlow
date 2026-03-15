@@ -76,10 +76,8 @@ public sealed class AuthService : IAuthService
 
         _dbContext.RefreshTokens.Add(refreshToken);
 
-        _logger.LogWarning($"before saving refresh token");
-
         await _dbContext.SaveChangesAsync(cancellationToken);
-        _logger.LogWarning($"before saving refresh token");
+
         return (accessToken, refreshTokenValue);
     }
 
@@ -96,8 +94,6 @@ public sealed class AuthService : IAuthService
 
         if (!existingRefreshToken.IsActive)
             throw new UnauthorizedAccessException("Refresh token is expired or revoked.");
-
-        _logger.LogWarning($"im here {existingRefreshToken}");
 
         existingRefreshToken.Revoke();
 
