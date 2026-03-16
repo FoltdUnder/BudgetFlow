@@ -61,4 +61,22 @@ public sealed class WalletService : IWalletService
             wallet.Balance,
             wallet.CreatedAtUtc);
     }
+
+    public async Task<IReadOnlyList<WalletDto>> GetByUserIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Wallets
+            .AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .OrderBy(x => x.CreatedAtUtc)
+            .Select(x => new WalletDto(
+                x.Id,
+                x.UserId,
+                x.Name,
+                x.Currency,
+                x.Balance,
+                x.CreatedAtUtc))
+            .ToListAsync(cancellationToken);
+    }
 }

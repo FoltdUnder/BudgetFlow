@@ -18,6 +18,20 @@ public sealed class WalletsController : ControllerBase
         _walletService = walletService;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetMine(CancellationToken cancellationToken)
+    {
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var wallets = await _walletService.GetByUserIdAsync(userId, cancellationToken);
+        return Ok(wallets);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateWalletRequest request,
