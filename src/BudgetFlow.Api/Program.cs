@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using BudgetFlow.Infrastructure.Auth;
 using BudgetFlow.Domain.Entities;
+using BudgetFlow.Application.Services;
+using BudgetFlow.Infrastructure.Services;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -34,6 +36,7 @@ try
 
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
     builder.Services
@@ -57,7 +60,14 @@ try
             };
         });
 
-    builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("UserOnly", policy =>
+            policy.RequireRole(Roles.User, Roles.Admin));
+
+        options.AddPolicy("AdminOnly", policy =>
+            policy.RequireRole(Roles.Admin));
+    });
 
     var app = builder.Build();
 
@@ -76,10 +86,10 @@ try
 
     app.UseHttpsRedirection();
 
-    app.MapControllers();
-
     app.UseAuthentication();
     app.UseAuthorization();
+
+    app.MapControllers();
 
     app.Run();
 }
