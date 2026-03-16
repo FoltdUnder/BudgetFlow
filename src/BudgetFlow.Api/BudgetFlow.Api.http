@@ -1,7 +1,9 @@
-@BudgetFlow.Api_HostAddress = http://localhost:8080
+@host = http://localhost:8080
+@accessToken = paste-access-token
+@refreshToken = paste-refresh-token
 
 ### Register
-POST {@BudgetFlow.Api_HostAddress}/api/auth/register
+POST {{host}}/api/auth/register
 Content-Type: application/json
 
 {
@@ -14,11 +16,11 @@ Content-Type: application/json
 
 
 ### Login
-POST http://localhost:8080/api/auth/login
+POST {{host}}/api/auth/login
 Content-Type: application/json
 
 {
-  "Email": "somehelp@gmail.com",
+  "Email": "somehelp22@gmail.com",
   "Password": "7878"
 }
 
@@ -26,17 +28,37 @@ Content-Type: application/json
 
 
 ### Refresh
-POST http://localhost:8080/api/auth/refresh
+POST {{host}}/api/auth/refresh
 Content-Type: application/json
 
 {
-  "refreshToken": "UXcZzXiy2VM5R7WO1kYMG4dH7XDdMmHS5kLEYZj537SxGKxP6mrvp/osz+OtgPFtXwMyZLaV3teZ2ebCd5QD0Q=="
+  "refreshToken": "{{refreshToken}}"
 }
 ###
 
 ### test me
-GET http://localhost:8080/api/test/me
+GET {{host}}/api/test/me
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5YmQyOTNkOS05NWRjLTQ1OGYtYjdlZi02NjdjMGJmNzBhYjQiLCJlbWFpbCI6InNvbWVoZWxwQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiOWJkMjkzZDktOTVkYy00NThmLWI3ZWYtNjY3YzBiZjcwYWI0IiwiZXhwIjoxNzczNjA2NDE2LCJpc3MiOiJCdWRnZXRGbG93IiwiYXVkIjoiQnVkZ2V0Rmxvdy5DbGllbnQifQ.hh9LrYi8ANpHb9oeBw5tz6h2G8iShbHm2sR6E69neWU
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Create wallet
+POST {{host}}/api/wallets
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Main wallet",
+  "currency": "USD",
+  "initialBalance": 100.00
+}
+
+###
+
+### List own wallets
+GET {{host}}/api/wallets
+Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 ###
