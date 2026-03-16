@@ -1,4 +1,4 @@
-namespace BudgetFlow.Domain.Entities;
+﻿namespace BudgetFlow.Domain.Entities;
 
 public sealed class Wallet
 {
@@ -13,6 +13,8 @@ public sealed class Wallet
     public decimal Balance { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
+
+    public bool IsEmpty => Balance == 0m;
 
     public User User { get; private set; } = null!;
 

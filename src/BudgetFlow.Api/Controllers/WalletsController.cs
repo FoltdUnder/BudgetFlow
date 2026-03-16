@@ -47,4 +47,20 @@ public sealed class WalletsController : ControllerBase
         var wallet = await _walletService.CreateAsync(userId, request, cancellationToken);
         return Created($"/api/wallets/{wallet.Id}", wallet);
     }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        await _walletService.DeleteAsync(userId, id, cancellationToken);
+        return NoContent();
+    }
 }

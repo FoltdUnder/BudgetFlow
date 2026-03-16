@@ -79,4 +79,28 @@ public sealed class WalletService : IWalletService
                 x.CreatedAtUtc))
             .ToListAsync(cancellationToken);
     }
+
+    public async Task DeleteAsync(
+        Guid userId,
+        Guid walletId,
+        CancellationToken cancellationToken)
+    {
+        var wallet = await _dbContext.Wallets
+            .FirstOrDefaultAsync(
+                x => x.Id == walletId && x.UserId == userId,
+                cancellationToken);
+
+        if (wallet is null)
+        {
+            throw new NotFoundException($"Wallet '{walletId}' was not found.");
+        }
+
+        if (!wallet.IsEmpty)
+        {
+            throw new ValidationException("Only empty wallets can be deleted.");
+        }
+
+        _dbContext.Wallets.Remove(wallet);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
 }
