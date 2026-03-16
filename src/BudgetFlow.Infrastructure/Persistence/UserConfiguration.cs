@@ -16,6 +16,17 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(256);
 
+        builder.Property(x => x.PasswordHash)
+            .IsRequired();
+
+        builder.HasIndex(x => x.Email)
+            .IsUnique();
+
+        builder.HasMany(x => x.RefreshTokens)
+            .WithOne(x => x.User)
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasIndex(x => x.Email)
             .IsUnique();
     }
