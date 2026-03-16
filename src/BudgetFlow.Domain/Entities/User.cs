@@ -3,6 +3,7 @@ namespace BudgetFlow.Domain.Entities;
 public sealed class User
 {
     public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
+    public ICollection<Wallet> Wallets { get; private set; } = new List<Wallet>();
     public Guid Id { get; private set; } = Guid.NewGuid();
 
     public string FullName { get; private set; } = string.Empty;
