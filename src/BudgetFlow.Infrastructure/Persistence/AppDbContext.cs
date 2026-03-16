@@ -1,4 +1,4 @@
-using BudgetFlow.Domain.Entities;
+﻿using BudgetFlow.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetFlow.Infrastructure.Persistence;
@@ -14,6 +14,7 @@ public sealed class AppDbContext : DbContext
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
+    public DbSet<Wallet> Wallets => Set<Wallet>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,4 +1,4 @@
-using BudgetFlow.Infrastructure;
+﻿using BudgetFlow.Infrastructure;
 using BudgetFlow.Application.Common.Interfaces;
 using BudgetFlow.Api.Middleware;
 using Serilog;
@@ -8,8 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using BudgetFlow.Infrastructure.Auth;
 using BudgetFlow.Domain.Entities;
-using BudgetFlow.Application.Services;
 using BudgetFlow.Infrastructure.Services;
+using BudgetFlow.Application.Interfaces;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -37,6 +37,7 @@ try
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IWalletService, WalletService>();
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
     builder.Services
