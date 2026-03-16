@@ -1,6 +1,6 @@
 using BudgetFlow.Application.Authentication.Models;
 using BudgetFlow.Application.Common.Interfaces;
-using BudgetFlow.Domain.Entities;   
+using BudgetFlow.Domain.Entities;
 using BudgetFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -39,13 +39,12 @@ public sealed class AuthService : IAuthService
         if (isExists)
             throw new InvalidOperationException("User with this email already exists.");
 
-        var user = new User( 
+        var user = new User(
             request.FullName,
             request.Email
         );
-        
-        user.SetPasswordHash(_passwordHasher.HashPassword(user, request.Password));
 
+        user.SetPasswordHash(_passwordHasher.HashPassword(user, request.Password));
 
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -61,10 +60,16 @@ public sealed class AuthService : IAuthService
         if (user is null)
             throw new UnauthorizedAccessException($"Invalid credentials. {request.Email}");
 
+        if (user.IsBlocked)
+        {
+            _logger.LogWarning("Blocked user {UserId} attempted to sign in.", user.Id);
+            throw new UnauthorizedAccessException("This account is blocked.");
+        }
+
         var passwordIsValid = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
         if (passwordIsValid == PasswordVerificationResult.Failed || passwordIsValid == PasswordVerificationResult.SuccessRehashNeeded)
-            throw new UnauthorizedAccessException($"Invalid password.");
+            throw new UnauthorizedAccessException("Invalid password.");
 
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshTokenValue = _tokenService.GenerateRefreshToken();
@@ -94,6 +99,13 @@ public sealed class AuthService : IAuthService
 
         if (!existingRefreshToken.IsActive)
             throw new UnauthorizedAccessException("Refresh token is expired or revoked.");
+
+        if (existingRefreshToken.User.IsBlocked)
+        {
+            existingRefreshToken.Revoke();
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            throw new UnauthorizedAccessException("This account is blocked.");
+        }
 
         existingRefreshToken.Revoke();
 
