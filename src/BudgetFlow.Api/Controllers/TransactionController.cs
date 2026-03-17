@@ -50,4 +50,19 @@ public sealed class TransactionController : ControllerBase
         await _transactionService.DeleteAsync(userId, id, cancellationToken);
         return NoContent();
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetMine(CancellationToken cancellationToken)
+    {
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var transactions = await _transactionService.GetByUserIdAsync(userId, cancellationToken);
+        return Ok(transactions);
+    }
+
 }

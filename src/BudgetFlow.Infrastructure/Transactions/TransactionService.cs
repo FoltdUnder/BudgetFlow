@@ -90,6 +90,27 @@ public sealed class TransactionService : ITransactionService
         return MapTransaction(transaction);
     }
 
+     public async Task<IReadOnlyList<TransactionDto>> GetByUserIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Transactions
+            .AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .OrderBy(x => x.CreatedAtUtc)
+            .Select(x => new TransactionDto(
+                x.Id,
+                x.UserId,
+                x.WalletId,
+                x.CategoryId,
+                x.Type,
+                x.Amount,
+                x.Date,
+                x.Note,
+                x.CreatedAtUtc,
+                x.UpdatedAtUtc))
+            .ToListAsync(cancellationToken);
+    }
     public async Task DeleteAsync(
         Guid userId,
         Guid transactionId,
