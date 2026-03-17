@@ -21,59 +21,13 @@ public sealed class TransactionService : ITransactionService
         CreateTransactionRequest request,
         CancellationToken cancellationToken)
     {
-        if (request.WalletId == Guid.Empty)
-        {
-            throw new ValidationException("Wallet identifier is required.");
-        }
+        ValidateRequest(request.WalletId, request.CategoryId, request.Type, request.Amount);
 
-        if (request.CategoryId == Guid.Empty)
-        {
-            throw new ValidationException("Category identifier is required.");
-        }
+        var wallet = await GetWalletAsync(userId, request.WalletId, cancellationToken);
+        var category = await GetCategoryAsync(userId, request.CategoryId, cancellationToken);
 
-        if (request.Amount <= 0)
-        {
-            throw new ValidationException("Amount must be greater than zero.");
-        }
-
-        if (!IsSupportedType(request.Type))
-        {
-            throw new ValidationException("Category type must be correct.");
-        }
-
-        var wallet = await _dbContext.Wallets
-            .FirstOrDefaultAsync(
-                x => x.Id == request.WalletId && x.UserId == userId,
-                cancellationToken);
-
-        if (wallet is null)
-        {
-            throw new NotFoundException($"Wallet '{request.WalletId}' was not found.");
-        }
-
-        var category = await _dbContext.Categories
-            .FirstOrDefaultAsync(
-                x => x.Id == request.CategoryId && x.UserId == userId,
-                cancellationToken);
-
-        if (category is null)
-        {
-            throw new NotFoundException($"Category '{request.CategoryId}' was not found.");
-        }
-
-        if (category.Type != request.Type)
-        {
-            throw new ValidationException("Category type must match transaction type.");
-        }
-
-        if (request.Type == CategoryType.Income)
-        {
-            wallet.Deposit(request.Amount);
-        }
-        else
-        {
-            wallet.Withdraw(request.Amount);
-        }
+        EnsureMatchingCategoryType(category.Type, request.Type);
+        ApplyTransactionEffect(wallet, request.Type, request.Amount);
 
         var transaction = new Transaction(
             userId,
@@ -85,6 +39,45 @@ public sealed class TransactionService : ITransactionService
             request.Note);
 
         _dbContext.Transactions.Add(transaction);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return MapTransaction(transaction);
+    }
+
+    public async Task<TransactionDto> UpdateAsync(
+        Guid userId,
+        Guid transactionId,
+        UpdateTransactionRequest request,
+        CancellationToken cancellationToken)
+    {
+        ValidateRequest(request.WalletId, request.CategoryId, request.Type, request.Amount);
+
+        var transaction = await _dbContext.Transactions
+            .Include(x => x.Wallet)
+            .FirstOrDefaultAsync(
+                x => x.Id == transactionId && x.UserId == userId,
+                cancellationToken);
+
+        if (transaction is null)
+        {
+            throw new NotFoundException($"Transaction '{transactionId}' was not found.");
+        }
+
+        var wallet = await GetWalletAsync(userId, request.WalletId, cancellationToken);
+        var category = await GetCategoryAsync(userId, request.CategoryId, cancellationToken);
+
+        EnsureMatchingCategoryType(category.Type, request.Type);
+
+        ReverseTransactionEffect(transaction.Wallet, transaction.Type, transaction.Amount);
+        ApplyTransactionEffect(wallet, request.Type, request.Amount);
+
+        transaction.ChangeWallet(wallet.Id);
+        transaction.ChangeType(request.Type, category.Type);
+        transaction.ChangeCategory(category.Id, category.Type);
+        transaction.SetAmount(request.Amount);
+        transaction.SetDate(request.Date);
+        transaction.SetNote(request.Note);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return MapTransaction(transaction);
@@ -127,14 +120,7 @@ public sealed class TransactionService : ITransactionService
             throw new NotFoundException($"Transaction '{transactionId}' was not found.");
         }
 
-        if (transaction.Type == CategoryType.Income)
-        {
-            transaction.Wallet.Withdraw(transaction.Amount);
-        }
-        else
-        {
-            transaction.Wallet.Deposit(transaction.Amount);
-        }
+        ReverseTransactionEffect(transaction.Wallet, transaction.Type, transaction.Amount);
 
         _dbContext.Transactions.Remove(transaction);
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -143,6 +129,91 @@ public sealed class TransactionService : ITransactionService
     private static bool IsSupportedType(CategoryType type)
     {
         return type is CategoryType.Expense or CategoryType.Income;
+    }
+
+    private static void ValidateRequest(Guid walletId, Guid categoryId, CategoryType type, decimal amount)
+    {
+        if (walletId == Guid.Empty)
+        {
+            throw new ValidationException("Wallet identifier is required.");
+        }
+
+        if (categoryId == Guid.Empty)
+        {
+            throw new ValidationException("Category identifier is required.");
+        }
+
+        if (amount <= 0)
+        {
+            throw new ValidationException("Amount must be greater than zero.");
+        }
+
+        if (!IsSupportedType(type))
+        {
+            throw new ValidationException("Category type must be correct.");
+        }
+    }
+
+    private async Task<Wallet> GetWalletAsync(Guid userId, Guid walletId, CancellationToken cancellationToken)
+    {
+        var wallet = await _dbContext.Wallets
+            .FirstOrDefaultAsync(
+                x => x.Id == walletId && x.UserId == userId,
+                cancellationToken);
+
+        if (wallet is null)
+        {
+            throw new NotFoundException($"Wallet '{walletId}' was not found.");
+        }
+
+        return wallet;
+    }
+
+    private async Task<Category> GetCategoryAsync(Guid userId, Guid categoryId, CancellationToken cancellationToken)
+    {
+        var category = await _dbContext.Categories
+            .FirstOrDefaultAsync(
+                x => x.Id == categoryId && x.UserId == userId,
+                cancellationToken);
+
+        if (category is null)
+        {
+            throw new NotFoundException($"Category '{categoryId}' was not found.");
+        }
+
+        return category;
+    }
+
+    private static void EnsureMatchingCategoryType(CategoryType categoryType, CategoryType transactionType)
+    {
+        if (categoryType != transactionType)
+        {
+            throw new ValidationException("Category type must match transaction type.");
+        }
+    }
+
+    private static void ApplyTransactionEffect(Wallet wallet, CategoryType type, decimal amount)
+    {
+        if (type == CategoryType.Income)
+        {
+            wallet.Deposit(amount);
+        }
+        else
+        {
+            wallet.Withdraw(amount);
+        }
+    }
+
+    private static void ReverseTransactionEffect(Wallet wallet, CategoryType type, decimal amount)
+    {
+        if (type == CategoryType.Income)
+        {
+            wallet.Withdraw(amount);
+        }
+        else
+        {
+            wallet.Deposit(amount);
+        }
     }
 
     private static TransactionDto MapTransaction(Transaction transaction)

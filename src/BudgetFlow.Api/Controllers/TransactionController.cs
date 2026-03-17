@@ -51,6 +51,23 @@ public sealed class TransactionController : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] UpdateTransactionRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var transaction = await _transactionService.UpdateAsync(userId, id, request, cancellationToken);
+        return Ok(transaction);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetMine(CancellationToken cancellationToken)
     {

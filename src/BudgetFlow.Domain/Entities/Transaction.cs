@@ -76,6 +76,12 @@ public sealed class Transaction
         Touch();
     }
 
+    public void ChangeWallet(Guid walletId)
+    {
+        WalletId = walletId;
+        Touch();
+    }
+
     public void ChangeCategory(Guid categoryId, CategoryType categoryType)
     {
         EnsureMatchingType(Type, categoryType);
