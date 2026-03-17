@@ -21,7 +21,7 @@ public sealed class TransactionService : ITransactionService
         CreateTransactionRequest request,
         CancellationToken cancellationToken)
     {
-        ValidateRequest(request.WalletId, request.CategoryId, request.Type, request.Amount);
+        ValidateRequest(request.WalletId, request.CategoryId, request.Type, request.Date, request.Amount);
 
         var wallet = await GetWalletAsync(userId, request.WalletId, cancellationToken);
         var category = await GetCategoryAsync(userId, request.CategoryId, cancellationToken);
@@ -50,7 +50,7 @@ public sealed class TransactionService : ITransactionService
         UpdateTransactionRequest request,
         CancellationToken cancellationToken)
     {
-        ValidateRequest(request.WalletId, request.CategoryId, request.Type, request.Amount);
+        ValidateRequest(request.WalletId, request.CategoryId, request.Type, request.Date, request.Amount);
 
         var transaction = await _dbContext.Transactions
             .Include(x => x.Wallet)
@@ -174,7 +174,7 @@ public sealed class TransactionService : ITransactionService
         }
     }
 
-    private static void ValidateRequest(Guid walletId, Guid categoryId, CategoryType type, decimal amount)
+    private static void ValidateRequest(Guid walletId, Guid categoryId, CategoryType type, DateTime date, decimal amount)
     {
         if (walletId == Guid.Empty)
         {
@@ -189,6 +189,11 @@ public sealed class TransactionService : ITransactionService
         if (amount <= 0)
         {
             throw new ValidationException("Amount must be greater than zero.");
+        }
+
+        if (date == default)
+        {
+            throw new ValidationException("Transaction date is required.");
         }
 
         if (!IsSupportedType(type))
