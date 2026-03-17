@@ -20,20 +20,7 @@ public sealed class WalletService : IWalletService
         CreateWalletRequest request,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
-            throw new ValidationException("Wallet name is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Currency))
-        {
-            throw new ValidationException("Wallet currency is required.");
-        }
-
-        if (request.InitialBalance < 0)
-        {
-            throw new ValidationException("Initial balance cannot be negative.");
-        }
+        ValidateCreateRequest(request);
 
         var userExists = await _dbContext.Users
             .AnyAsync(x => x.Id == userId, cancellationToken);
@@ -101,5 +88,23 @@ public sealed class WalletService : IWalletService
 
         _dbContext.Wallets.Remove(wallet);
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static void ValidateCreateRequest(CreateWalletRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new ValidationException("Wallet name is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Currency))
+        {
+            throw new ValidationException("Wallet currency is required.");
+        }
+
+        if (request.InitialBalance < 0)
+        {
+            throw new ValidationException("Initial balance cannot be negative.");
+        }
     }
 }
