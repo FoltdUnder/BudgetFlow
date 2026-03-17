@@ -1,4 +1,12 @@
+using BudgetFlow.Application.Authentication;
+using BudgetFlow.Application.Transactions;
+using BudgetFlow.Application.Users;
+using BudgetFlow.Application.Wallets;
+using BudgetFlow.Infrastructure.Auth;
 using BudgetFlow.Infrastructure.Persistence;
+using BudgetFlow.Infrastructure.Transactions;
+using BudgetFlow.Infrastructure.Users;
+using BudgetFlow.Infrastructure.Wallets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +25,12 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
+
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IWalletService, WalletService>();
+        services.AddScoped<ITransactionService, TransactionService>();
 
         return services;
     }

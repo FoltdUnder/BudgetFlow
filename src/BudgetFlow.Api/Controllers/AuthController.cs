@@ -1,5 +1,5 @@
 using BudgetFlow.Application.Authentication.Models;
-using BudgetFlow.Application.Common.Interfaces;
+using BudgetFlow.Application.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using BudgetFlow.Api.Contracts.Auth;
 

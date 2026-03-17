@@ -1,7 +1,6 @@
 using BudgetFlow.Application.Authentication.Models;
 
-
-namespace BudgetFlow.Application.Common.Interfaces;
+namespace BudgetFlow.Application.Authentication;
 
 public interface IAuthService
 {

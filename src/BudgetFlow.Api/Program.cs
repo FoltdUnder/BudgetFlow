@@ -1,5 +1,4 @@
-﻿using BudgetFlow.Infrastructure;
-using BudgetFlow.Application.Common.Interfaces;
+using BudgetFlow.Infrastructure;
 using BudgetFlow.Api.Middleware;
 using Serilog;
 using System.Text;
@@ -8,10 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using BudgetFlow.Infrastructure.Auth;
 using BudgetFlow.Domain.Entities;
-using BudgetFlow.Infrastructure.Services;
-using BudgetFlow.Application.Wallets;
-using BudgetFlow.Application.Transactions;
-using BudgetFlow.Application.Users;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -27,6 +22,7 @@ try
     builder.Services.AddOpenApi();
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddControllers();
+    builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
     builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
@@ -34,14 +30,6 @@ try
     var jwtSection = builder.Configuration.GetSection(JwtOptions.SectionName);
     var jwtOptions = jwtSection.Get<JwtOptions>() 
                     ?? throw new InvalidOperationException("Jwt settings are missing.");
-
-
-    builder.Services.AddScoped<ITokenService, TokenService>();
-    builder.Services.AddScoped<IAuthService, AuthService>();
-    builder.Services.AddScoped<IUserService, UserService>();
-    builder.Services.AddScoped<IWalletService, WalletService>();
-    builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-    builder.Services.AddScoped<ITransactionService, TransactionService>();
 
     builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

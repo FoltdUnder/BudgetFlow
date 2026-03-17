@@ -1,10 +1,10 @@
-﻿using BudgetFlow.Application.Common.Exceptions;
+using BudgetFlow.Application.Common.Exceptions;
 using BudgetFlow.Application.Wallets;
 using BudgetFlow.Domain.Entities;
 using BudgetFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace BudgetFlow.Infrastructure.Services;
+namespace BudgetFlow.Infrastructure.Wallets;
 
 public sealed class WalletService : IWalletService
 {

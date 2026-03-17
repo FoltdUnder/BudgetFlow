@@ -4,7 +4,7 @@ using BudgetFlow.Domain.Entities;
 using BudgetFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace BudgetFlow.Infrastructure.Services;
+namespace BudgetFlow.Infrastructure.Users;
 
 public sealed class UserService : IUserService
 {

@@ -1,6 +1,6 @@
 using BudgetFlow.Domain.Entities;
 
-namespace BudgetFlow.Application.Common.Interfaces;
+namespace BudgetFlow.Application.Authentication;
 
 public interface ITokenService
 {

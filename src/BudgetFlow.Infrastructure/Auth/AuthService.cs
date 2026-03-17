@@ -1,5 +1,5 @@
 using BudgetFlow.Application.Authentication.Models;
-using BudgetFlow.Application.Common.Interfaces;
+using BudgetFlow.Application.Authentication;
 using BudgetFlow.Domain.Entities;
 using BudgetFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

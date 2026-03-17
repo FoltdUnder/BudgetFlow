@@ -5,7 +5,7 @@ using BudgetFlow.Domain.Types;
 using BudgetFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace BudgetFlow.Infrastructure.Services;
+namespace BudgetFlow.Infrastructure.Transactions;
 
 public sealed class TransactionService : ITransactionService
 {
