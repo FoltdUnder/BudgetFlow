@@ -4,6 +4,8 @@ public sealed class User
 {
     public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
     public ICollection<Wallet> Wallets { get; private set; } = new List<Wallet>();
+    public ICollection<Category> Categories { get; private set; } = new List<Category>();
+    public ICollection<Transaction> Transactions { get; private set; } = new List<Transaction>();
     public Guid Id { get; private set; } = Guid.NewGuid();
 
     public string FullName { get; private set; } = string.Empty;

@@ -17,6 +17,7 @@ public sealed class Wallet
     public bool IsEmpty => Balance == 0m;
 
     public User User { get; private set; } = null!;
+    public ICollection<Transaction> Transactions { get; private set; } = new List<Transaction>();
 
     private Wallet()
     {

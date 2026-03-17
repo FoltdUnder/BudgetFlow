@@ -2,7 +2,7 @@ using BudgetFlow.Domain.Types;
 
 namespace BudgetFlow.Domain.Entities;
 
-public class Category
+public sealed class Category
 {
     public Guid Id { get; set; }
 
@@ -15,4 +15,6 @@ public class Category
     public User User { get; set; } = null!;
 
     public DateTime CreatedAtUtc { get; set; }
+
+    public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 }
