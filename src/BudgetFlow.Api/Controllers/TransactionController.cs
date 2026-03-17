@@ -69,7 +69,9 @@ public sealed class TransactionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetMine(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetMine(
+        [FromQuery] GetTransactionsRequest request,
+        CancellationToken cancellationToken)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -78,7 +80,7 @@ public sealed class TransactionController : ControllerBase
             return Unauthorized();
         }
 
-        var transactions = await _transactionService.GetByUserIdAsync(userId, cancellationToken);
+        var transactions = await _transactionService.GetByUserIdAsync(userId, request, cancellationToken);
         return Ok(transactions);
     }
 

@@ -62,3 +62,24 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 ###
+
+### List own transactions
+GET {{host}}/api/transactions
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Filter transactions by wallet
+GET {{host}}/api/transactions?walletId=00000000-0000-0000-0000-000000000001
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Filter transactions by type, category, and date range
+GET {{host}}/api/transactions?type=Expense&categoryId=00000000-0000-0000-0000-000000000002&from=2026-03-01&to=2026-03-31
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###

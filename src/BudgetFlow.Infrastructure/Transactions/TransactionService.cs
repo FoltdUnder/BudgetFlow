@@ -85,11 +85,41 @@ public sealed class TransactionService : ITransactionService
 
      public async Task<IReadOnlyList<TransactionDto>> GetByUserIdAsync(
         Guid userId,
+        GetTransactionsRequest request,
         CancellationToken cancellationToken)
     {
-        return await _dbContext.Transactions
+        ValidateFilters(request);
+
+        var query = _dbContext.Transactions
             .AsNoTracking()
-            .Where(x => x.UserId == userId)
+            .Where(x => x.UserId == userId);
+
+        if (request.WalletId.HasValue)
+        {
+            query = query.Where(x => x.WalletId == request.WalletId.Value);
+        }
+
+        if (request.Type.HasValue)
+        {
+            query = query.Where(x => x.Type == request.Type.Value);
+        }
+
+        if (request.CategoryId.HasValue)
+        {
+            query = query.Where(x => x.CategoryId == request.CategoryId.Value);
+        }
+
+        if (request.From.HasValue)
+        {
+            query = query.Where(x => x.Date >= request.From.Value);
+        }
+
+        if (request.To.HasValue)
+        {
+            query = query.Where(x => x.Date <= request.To.Value);
+        }
+
+        return await query
             .OrderBy(x => x.CreatedAtUtc)
             .Select(x => new TransactionDto(
                 x.Id,
@@ -129,6 +159,19 @@ public sealed class TransactionService : ITransactionService
     private static bool IsSupportedType(CategoryType type)
     {
         return type is CategoryType.Expense or CategoryType.Income;
+    }
+
+    private static void ValidateFilters(GetTransactionsRequest request)
+    {
+        if (request.From.HasValue && request.To.HasValue && request.From.Value > request.To.Value)
+        {
+            throw new ValidationException("'from' must be less than or equal to 'to'.");
+        }
+
+        if (request.Type.HasValue && !IsSupportedType(request.Type.Value))
+        {
+            throw new ValidationException("Category type must be correct.");
+        }
     }
 
     private static void ValidateRequest(Guid walletId, Guid categoryId, CategoryType type, decimal amount)
