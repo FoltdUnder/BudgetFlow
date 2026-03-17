@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using BudgetFlow.Application.Common.Exceptions;
+using System.Net.Mail;
 
 namespace BudgetFlow.Infrastructure.Auth;
 
@@ -33,15 +35,19 @@ public sealed class AuthService : IAuthService
 
     public async Task RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
+        ValidateRegisterRequest(request);
+
+        var normalizedEmail = request.Email.Trim();
+
         var isExists = await _dbContext.Users
-            .AnyAsync(x => x.Email == request.Email, cancellationToken);
+            .AnyAsync(x => x.Email == normalizedEmail, cancellationToken);
 
         if (isExists)
-            throw new InvalidOperationException("User with this email already exists.");
+            throw new ValidationException("User with this email already exists.");
 
         var user = new User(
-            request.FullName,
-            request.Email
+            request.FullName.Trim(),
+            normalizedEmail
         );
 
         user.SetPasswordHash(_passwordHasher.HashPassword(user, request.Password));
@@ -54,8 +60,12 @@ public sealed class AuthService : IAuthService
         LoginRequest request,
         CancellationToken cancellationToken)
     {
+        ValidateLoginRequest(request);
+
+        var normalizedEmail = request.Email.Trim();
+
         var user = await _dbContext.Users
-            .FirstOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Email == normalizedEmail, cancellationToken);
 
         if (user is null)
             throw new UnauthorizedAccessException($"Invalid credentials. {request.Email}");
@@ -135,5 +145,56 @@ public sealed class AuthService : IAuthService
 
         existingRefreshToken.Revoke();
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static void ValidateRegisterRequest(RegisterRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            throw new ValidationException("Full name is required.");
+        }
+
+        ValidateEmail(request.Email);
+        ValidatePassword(request.Password);
+    }
+
+    private static void ValidateLoginRequest(LoginRequest request)
+    {
+        ValidateEmail(request.Email);
+
+        if (string.IsNullOrWhiteSpace(request.Password))
+        {
+            throw new ValidationException("Password is required.");
+        }
+    }
+
+    private static void ValidateEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new ValidationException("Email is required.");
+        }
+
+        try
+        {
+            _ = new MailAddress(email.Trim());
+        }
+        catch (FormatException)
+        {
+            throw new ValidationException("Email format is invalid.");
+        }
+    }
+
+    private static void ValidatePassword(string password)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            throw new ValidationException("Password is required.");
+        }
+
+        if (password.Length < 4)
+        {
+            throw new ValidationException("Password must be at least 4 characters long.");
+        }
     }
 }
