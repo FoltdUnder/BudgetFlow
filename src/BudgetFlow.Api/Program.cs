@@ -39,6 +39,7 @@ try
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IWalletService, WalletService>();
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+    builder.Services.AddScoped<ITransactionService, TransactionService>();
 
     builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
