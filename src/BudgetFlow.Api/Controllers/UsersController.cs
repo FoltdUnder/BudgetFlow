@@ -1,4 +1,4 @@
-﻿using BudgetFlow.Application.Interfaces;
+﻿using BudgetFlow.Application.Users;
 using BudgetFlow.Api.Contracts;
 using BudgetFlow.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;

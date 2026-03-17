@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BudgetFlow.Application.Transactions;
-using BudgetFlow.Application.Common.Interfaces;
 using System.Security.Claims;
 
 namespace BudgetFlow.Api.Controllers;

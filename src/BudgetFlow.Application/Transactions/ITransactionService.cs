@@ -1,7 +1,4 @@
-using BudgetFlow.Application.Transactions;
-
-
-namespace BudgetFlow.Application.Common.Interfaces;
+namespace BudgetFlow.Application.Transactions;
 
 public interface ITransactionService
 {

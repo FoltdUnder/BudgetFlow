@@ -9,7 +9,9 @@ using Microsoft.AspNetCore.Identity;
 using BudgetFlow.Infrastructure.Auth;
 using BudgetFlow.Domain.Entities;
 using BudgetFlow.Infrastructure.Services;
-using BudgetFlow.Application.Interfaces;
+using BudgetFlow.Application.Wallets;
+using BudgetFlow.Application.Transactions;
+using BudgetFlow.Application.Users;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()

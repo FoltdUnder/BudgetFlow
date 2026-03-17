@@ -3,7 +3,6 @@ using BudgetFlow.Application.Users;
 using BudgetFlow.Domain.Entities;
 using BudgetFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using BudgetFlow.Application.Interfaces;
 
 namespace BudgetFlow.Infrastructure.Services;
 

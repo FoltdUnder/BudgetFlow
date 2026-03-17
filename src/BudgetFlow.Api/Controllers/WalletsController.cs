@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using BudgetFlow.Application.Common.Interfaces;
 using BudgetFlow.Application.Wallets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

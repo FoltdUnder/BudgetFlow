@@ -1,6 +1,4 @@
-using BudgetFlow.Application.Users;
-
-namespace BudgetFlow.Application.Interfaces;
+namespace BudgetFlow.Application.Users;
 
 public interface IUserService
 {

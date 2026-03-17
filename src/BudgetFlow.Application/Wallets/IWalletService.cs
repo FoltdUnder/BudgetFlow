@@ -1,6 +1,4 @@
-﻿using BudgetFlow.Application.Wallets;
-
-namespace BudgetFlow.Application.Common.Interfaces;
+﻿namespace BudgetFlow.Application.Wallets;
 
 public interface IWalletService
 {

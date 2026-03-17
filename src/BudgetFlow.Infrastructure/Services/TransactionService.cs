@@ -1,5 +1,4 @@
 using BudgetFlow.Application.Common.Exceptions;
-using BudgetFlow.Application.Common.Interfaces;
 using BudgetFlow.Application.Transactions;
 using BudgetFlow.Domain.Entities;
 using BudgetFlow.Domain.Types;
