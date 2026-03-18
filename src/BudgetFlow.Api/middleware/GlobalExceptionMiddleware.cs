@@ -37,16 +37,16 @@ public sealed class GlobalExceptionMiddleware
 
     private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (statusCode, message) = MapException(exception);
+        var error = MapException(exception);
 
         var response = new ApiErrorResponse
         {
-            StatusCode = statusCode,
-            Message = message,
-            TraceId = context.TraceIdentifier
+            Message = error.Message,
+            Code = error.Code,
+            Status = error.Status
         };
 
-        context.Response.StatusCode = statusCode;
+        context.Response.StatusCode = error.Status;
         context.Response.ContentType = "application/json";
 
         var json = JsonSerializer.Serialize(response);
@@ -54,14 +54,34 @@ public sealed class GlobalExceptionMiddleware
         await context.Response.WriteAsync(json);
     }
 
-    private static (int StatusCode, string Message) MapException(Exception exception)
+    private static (int Status, string Code, string Message) MapException(Exception exception)
     {
         return exception switch
         {
-            ValidationException => (StatusCodes.Status400BadRequest, exception.Message),
-            NotFoundException => (StatusCodes.Status404NotFound, exception.Message),
-            UnauthorizedAccessException => (StatusCodes.Status403Forbidden, "Access denied."),
-            _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.")
+            ValidationException => (
+                StatusCodes.Status400BadRequest,
+                "validation_error",
+                exception.Message),
+            ArgumentOutOfRangeException => (
+                StatusCodes.Status400BadRequest,
+                "business_rule_violation",
+                exception.Message),
+            NotFoundException => (
+                StatusCodes.Status404NotFound,
+                "not_found",
+                exception.Message),
+            InvalidOperationException => (
+                StatusCodes.Status409Conflict,
+                "business_rule_conflict",
+                exception.Message),
+            UnauthorizedAccessException => (
+                StatusCodes.Status403Forbidden,
+                "access_denied",
+                "Access denied."),
+            _ => (
+                StatusCodes.Status500InternalServerError,
+                "internal_server_error",
+                "An unexpected error occurred.")
         };
     }
 }
