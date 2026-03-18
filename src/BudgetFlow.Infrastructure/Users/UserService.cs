@@ -37,13 +37,7 @@ public sealed class UserService : IUserService
             throw new ValidationException($"Role must be either '{Roles.User}' or '{Roles.Admin}'.");
         }
 
-        var user = await _dbContext.Users
-            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
-
-        if (user is null)
-        {
-            throw new NotFoundException($"User '{userId}' was not found.");
-        }
+        var user = await GetUserAsync(userId, cancellationToken);
 
         user.ChangeRole(role);
         _dbContext.AuditLogs.Add(new AuditLog(
@@ -53,5 +47,46 @@ public sealed class UserService : IUserService
             user.Id,
             $"User role changed to '{role}'."));
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task BlockAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await GetUserAsync(userId, cancellationToken);
+
+        user.Block();
+        _dbContext.AuditLogs.Add(new AuditLog(
+            user.Id,
+            "user_blocked",
+            nameof(User),
+            user.Id,
+            $"User '{user.Email}' was blocked."));
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UnblockAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await GetUserAsync(userId, cancellationToken);
+
+        user.Unblock();
+        _dbContext.AuditLogs.Add(new AuditLog(
+            user.Id,
+            "user_unblocked",
+            nameof(User),
+            user.Id,
+            $"User '{user.Email}' was unblocked."));
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<User> GetUserAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+
+        if (user is null)
+        {
+            throw new NotFoundException($"User '{userId}' was not found.");
+        }
+
+        return user;
     }
 }

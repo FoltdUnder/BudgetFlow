@@ -1,4 +1,4 @@
-﻿using BudgetFlow.Application.Users;
+using BudgetFlow.Application.Users;
 using BudgetFlow.Api.Contracts;
 using BudgetFlow.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -47,6 +47,26 @@ public sealed class UsersController : ControllerBase
         CancellationToken cancellationToken)
     {
         await _userService.ChangeRoleAsync(id, request.Role, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/block")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Block(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        await _userService.BlockAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/unblock")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Unblock(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        await _userService.UnblockAsync(id, cancellationToken);
         return NoContent();
     }
 

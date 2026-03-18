@@ -102,3 +102,15 @@ Authorization: Bearer {{accessToken}}
 
 ###
 
+
+### Admin block user
+PUT {{host}}/api/users/00000000-0000-0000-0000-000000000001/block
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Admin unblock user
+PUT {{host}}/api/users/00000000-0000-0000-0000-000000000001/unblock
+Authorization: Bearer {{accessToken}}
+
+###
