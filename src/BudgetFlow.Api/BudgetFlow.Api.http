@@ -114,3 +114,10 @@ PUT {{host}}/api/users/00000000-0000-0000-0000-000000000001/unblock
 Authorization: Bearer {{accessToken}}
 
 ###
+
+### Admin dashboard
+GET {{host}}/api/dashboard/admin
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###
