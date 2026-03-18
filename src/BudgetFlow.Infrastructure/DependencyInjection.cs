@@ -1,8 +1,10 @@
+using BudgetFlow.Application.AuditLogs;
 using BudgetFlow.Application.Authentication;
 using BudgetFlow.Application.Dashboard;
 using BudgetFlow.Application.Transactions;
 using BudgetFlow.Application.Users;
 using BudgetFlow.Application.Wallets;
+using BudgetFlow.Infrastructure.AuditLogs;
 using BudgetFlow.Infrastructure.Auth;
 using BudgetFlow.Infrastructure.Dashboard;
 using BudgetFlow.Infrastructure.Persistence;
@@ -28,6 +30,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserDashboardService, UserDashboardService>();

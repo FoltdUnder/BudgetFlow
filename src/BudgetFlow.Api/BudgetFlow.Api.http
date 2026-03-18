@@ -121,3 +121,10 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 ###
+
+### Recent audit events
+GET {{host}}/api/audit-logs/recent?limit=20
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###
