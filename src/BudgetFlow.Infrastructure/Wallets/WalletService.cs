@@ -72,6 +72,43 @@ public sealed class WalletService : IWalletService
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<WalletDto> UpdateAsync(
+        Guid userId,
+        Guid walletId,
+        UpdateWalletRequest request,
+        CancellationToken cancellationToken)
+    {
+        ValidateUpdateRequest(request);
+
+        var wallet = await _dbContext.Wallets
+            .FirstOrDefaultAsync(
+                x => x.Id == walletId && x.UserId == userId,
+                cancellationToken);
+
+        if (wallet is null)
+        {
+            throw new NotFoundException($"Wallet '{walletId}' was not found.");
+        }
+
+        wallet.Rename(request.Name.Trim());
+
+        _dbContext.AuditLogs.Add(new AuditLog(
+            userId,
+            "wallet_updated",
+            nameof(Wallet),
+            wallet.Id,
+            $"Wallet '{wallet.Name}' was updated."));
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return new WalletDto(
+            wallet.Id,
+            wallet.UserId,
+            wallet.Name,
+            wallet.Currency,
+            wallet.Balance,
+            wallet.CreatedAtUtc);
+    }
+
     public async Task DeleteAsync(
         Guid userId,
         Guid walletId,
@@ -119,4 +156,14 @@ public sealed class WalletService : IWalletService
             throw new ValidationException("Initial balance cannot be negative.");
         }
     }
+
+    private static void ValidateUpdateRequest(UpdateWalletRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new ValidationException("Wallet name is required.");
+        }
+    }
 }
+
+

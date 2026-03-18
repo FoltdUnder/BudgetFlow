@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using BudgetFlow.Application.Wallets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -45,6 +45,23 @@ public sealed class WalletsController : ControllerBase
 
         var wallet = await _walletService.CreateAsync(userId, request, cancellationToken);
         return Created($"/api/wallets/{wallet.Id}", wallet);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] UpdateWalletRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var wallet = await _walletService.UpdateAsync(userId, id, request, cancellationToken);
+        return Ok(wallet);
     }
 
     [HttpDelete("{id:guid}")]
