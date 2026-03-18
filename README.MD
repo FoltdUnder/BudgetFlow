@@ -1,3 +1,5 @@
+get postman collection http://localhost:8080/openapi/v1.json
+
 Build api
     docker build -f src/BudgetFlow.Api/Dockerfile -t budgetflow-api .
 
