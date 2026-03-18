@@ -83,3 +83,10 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 ###
+
+### User dashboard
+GET {{host}}/api/dashboard
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+###

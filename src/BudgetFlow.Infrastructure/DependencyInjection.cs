@@ -1,8 +1,10 @@
 using BudgetFlow.Application.Authentication;
+using BudgetFlow.Application.Dashboard;
 using BudgetFlow.Application.Transactions;
 using BudgetFlow.Application.Users;
 using BudgetFlow.Application.Wallets;
 using BudgetFlow.Infrastructure.Auth;
+using BudgetFlow.Infrastructure.Dashboard;
 using BudgetFlow.Infrastructure.Persistence;
 using BudgetFlow.Infrastructure.Transactions;
 using BudgetFlow.Infrastructure.Users;
@@ -28,6 +30,7 @@ public static class DependencyInjection
 
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserDashboardService, UserDashboardService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IWalletService, WalletService>();
         services.AddScoped<ITransactionService, TransactionService>();
