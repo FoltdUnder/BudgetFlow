@@ -37,6 +37,12 @@ public sealed class WalletService : IWalletService
             request.InitialBalance);
 
         _dbContext.Wallets.Add(wallet);
+        _dbContext.AuditLogs.Add(new AuditLog(
+            userId,
+            "wallet_created",
+            nameof(Wallet),
+            wallet.Id,
+            $"Wallet '{wallet.Name}' was created."));
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return new WalletDto(
@@ -86,6 +92,12 @@ public sealed class WalletService : IWalletService
             throw new ValidationException("Only empty wallets can be deleted.");
         }
 
+        _dbContext.AuditLogs.Add(new AuditLog(
+            userId,
+            "wallet_deleted",
+            nameof(Wallet),
+            wallet.Id,
+            $"Wallet '{wallet.Name}' was deleted."));
         _dbContext.Wallets.Remove(wallet);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }

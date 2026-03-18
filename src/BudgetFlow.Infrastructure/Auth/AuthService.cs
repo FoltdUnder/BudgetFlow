@@ -53,6 +53,12 @@ public sealed class AuthService : IAuthService
         user.SetPasswordHash(_passwordHasher.HashPassword(user, request.Password));
 
         _dbContext.Users.Add(user);
+        _dbContext.AuditLogs.Add(new AuditLog(
+            user.Id,
+            "user_registered",
+            nameof(User),
+            user.Id,
+            $"User '{normalizedEmail}' registered."));
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

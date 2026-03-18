@@ -39,6 +39,12 @@ public sealed class TransactionService : ITransactionService
             request.Note);
 
         _dbContext.Transactions.Add(transaction);
+        _dbContext.AuditLogs.Add(new AuditLog(
+            userId,
+            "transaction_created",
+            nameof(Transaction),
+            transaction.Id,
+            $"Transaction '{transaction.Id}' was created."));
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return MapTransaction(transaction);
@@ -78,6 +84,12 @@ public sealed class TransactionService : ITransactionService
         transaction.SetDate(request.Date);
         transaction.SetNote(request.Note);
 
+        _dbContext.AuditLogs.Add(new AuditLog(
+            userId,
+            "transaction_updated",
+            nameof(Transaction),
+            transaction.Id,
+            $"Transaction '{transaction.Id}' was updated."));
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return MapTransaction(transaction);
@@ -152,6 +164,12 @@ public sealed class TransactionService : ITransactionService
 
         ReverseTransactionEffect(transaction.Wallet, transaction.Type, transaction.Amount);
 
+        _dbContext.AuditLogs.Add(new AuditLog(
+            userId,
+            "transaction_deleted",
+            nameof(Transaction),
+            transaction.Id,
+            $"Transaction '{transaction.Id}' was deleted."));
         _dbContext.Transactions.Remove(transaction);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }

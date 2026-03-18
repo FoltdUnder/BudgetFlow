@@ -46,6 +46,12 @@ public sealed class UserService : IUserService
         }
 
         user.ChangeRole(role);
+        _dbContext.AuditLogs.Add(new AuditLog(
+            user.Id,
+            "user_role_changed",
+            nameof(User),
+            user.Id,
+            $"User role changed to '{role}'."));
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

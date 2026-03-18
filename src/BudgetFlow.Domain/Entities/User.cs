@@ -2,6 +2,7 @@ namespace BudgetFlow.Domain.Entities;
 
 public sealed class User
 {
+    public ICollection<AuditLog> AuditLogs { get; private set; } = new List<AuditLog>();
     public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
     public ICollection<Wallet> Wallets { get; private set; } = new List<Wallet>();
     public ICollection<Category> Categories { get; private set; } = new List<Category>();
