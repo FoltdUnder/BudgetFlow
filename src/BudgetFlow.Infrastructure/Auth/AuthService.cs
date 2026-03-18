@@ -74,18 +74,40 @@ public sealed class AuthService : IAuthService
             .FirstOrDefaultAsync(x => x.Email == normalizedEmail, cancellationToken);
 
         if (user is null)
+        {
+            await AddAuditLogAsync(
+                null,
+                "login_failed",
+                null,
+                $"Login failed for '{normalizedEmail}': user not found.",
+                cancellationToken);
             throw new UnauthorizedAccessException($"Invalid credentials. {request.Email}");
+        }
 
         if (user.IsBlocked)
         {
             _logger.LogWarning("Blocked user {UserId} attempted to sign in.", user.Id);
+            await AddAuditLogAsync(
+                user.Id,
+                "login_failed",
+                user.Id,
+                $"Login failed for '{normalizedEmail}': account is blocked.",
+                cancellationToken);
             throw new UnauthorizedAccessException("This account is blocked.");
         }
 
         var passwordIsValid = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
         if (passwordIsValid == PasswordVerificationResult.Failed || passwordIsValid == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            await AddAuditLogAsync(
+                user.Id,
+                "login_failed",
+                user.Id,
+                $"Login failed for '{normalizedEmail}': invalid password.",
+                cancellationToken);
             throw new UnauthorizedAccessException("Invalid password.");
+        }
 
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshTokenValue = _tokenService.GenerateRefreshToken();
@@ -96,6 +118,12 @@ public sealed class AuthService : IAuthService
             DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays));
 
         _dbContext.RefreshTokens.Add(refreshToken);
+        _dbContext.AuditLogs.Add(new AuditLog(
+            user.Id,
+            "login_succeeded",
+            nameof(User),
+            user.Id,
+            $"User '{normalizedEmail}' signed in."));
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -202,5 +230,21 @@ public sealed class AuthService : IAuthService
         {
             throw new ValidationException("Password must be at least 4 characters long.");
         }
+    }
+
+    private async Task AddAuditLogAsync(
+        Guid? userId,
+        string action,
+        Guid? entityId,
+        string description,
+        CancellationToken cancellationToken)
+    {
+        _dbContext.AuditLogs.Add(new AuditLog(
+            userId,
+            action,
+            nameof(User),
+            entityId,
+            description));
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }
