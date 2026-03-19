@@ -239,7 +239,7 @@ public sealed class TransactionService : ITransactionService
     {
         var category = await _dbContext.Categories
             .FirstOrDefaultAsync(
-                x => x.Id == categoryId && x.UserId == userId,
+                x => x.Id == categoryId && (x.IsDefault || x.UserId == userId),
                 cancellationToken);
 
         if (category is null)

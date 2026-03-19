@@ -71,6 +71,9 @@ namespace BudgetFlow.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -79,7 +82,7 @@ namespace BudgetFlow.Infrastructure.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -87,6 +90,11 @@ namespace BudgetFlow.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("UserId", "Name", "Type")
+                        .HasFilter("\"UserId\" IS NOT NULL")
+                        .IsUnique();
+
+                    b.HasIndex("Name", "Type")
+                        .HasFilter("\"IsDefault\" = TRUE")
                         .IsUnique();
 
                     b.ToTable("categories", (string)null);
@@ -258,7 +266,7 @@ namespace BudgetFlow.Infrastructure.Migrations
                         .WithMany("Categories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired(false);
 
                     b.Navigation("User");
                 });

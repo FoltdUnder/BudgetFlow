@@ -7,6 +7,7 @@ It currently supports:
 - User registration, login, refresh, and logout
 - Role-based authorization for users and admins
 - Wallet management
+- Category listing for transaction setup
 - Transaction management with filtering
 - User and admin dashboards
 - Admin user management: role changes, block, unblock
@@ -57,6 +58,10 @@ tests/
 - `POST /api/wallets`
 - `PUT /api/wallets/{id}`
 - `DELETE /api/wallets/{id}`
+
+### Categories
+
+- `GET /api/categories`
 
 ### Transactions
 
@@ -114,7 +119,9 @@ Run the API:
 dotnet run --project src/BudgetFlow.Api
 ```
 
-On first startup, the app applies EF Core migrations and seeds demo data if the database has no users yet.
+On startup, the app applies EF Core migrations automatically.
+
+Demo data seeding is enabled only in the Development environment by default. It runs only if the database has no users yet.
 
 Demo credentials:
 
@@ -122,7 +129,9 @@ Demo credentials:
 - User: `alice@budgetflow.local` / `User123!`
 - User: `bob@budgetflow.local` / `User123!`
 
-The demo seed also creates sample wallets, categories, and transactions so dashboards and filtered transaction queries have useful data immediately.
+The app ensures a shared set of default categories exists on startup. Demo data also creates sample wallets, a couple of custom categories, and transactions so dashboards and filtered transaction queries have useful data immediately.
+
+Default categories are global and read-only by design. Custom categories remain user-owned.
 
 ## Environment Variables
 
@@ -134,9 +143,12 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 ASPNETCORE_ENVIRONMENT=Development
 ASPNETCORE_URLS=http://+:8080
+DEMO_DATA_ENABLED=true
 DB_HOST=budgetflow-db
 DB_PORT=5432
 ```
+
+Set `DEMO_DATA_ENABLED=false` if you want to start in Development without the sample users.
 
 ## Database Migrations
 

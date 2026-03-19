@@ -29,6 +29,7 @@ public sealed class AppDbInitializer
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await _dbContext.Database.MigrateAsync(cancellationToken);
+        await EnsureDefaultCategoriesAsync(cancellationToken);
 
         if (!_demoDataOptions.Enabled)
         {
@@ -65,45 +66,40 @@ public sealed class AppDbInitializer
             bobCashWallet
         };
 
-        var categories = new[]
+        var existingCategories = await _dbContext.Categories
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var customCategories = new[]
         {
-            CreateCategory(admin.Id, "Subscriptions", CategoryType.Expense, now),
-            CreateCategory(admin.Id, "Consulting", CategoryType.Income, now),
-            CreateCategory(alice.Id, "Salary", CategoryType.Income, now),
-            CreateCategory(alice.Id, "Freelance", CategoryType.Income, now),
-            CreateCategory(alice.Id, "Groceries", CategoryType.Expense, now),
-            CreateCategory(alice.Id, "Rent", CategoryType.Expense, now),
-            CreateCategory(alice.Id, "Transport", CategoryType.Expense, now),
-            CreateCategory(bob.Id, "Salary", CategoryType.Income, now),
-            CreateCategory(bob.Id, "Food", CategoryType.Expense, now),
-            CreateCategory(bob.Id, "Travel", CategoryType.Expense, now),
-            CreateCategory(bob.Id, "Bonus", CategoryType.Income, now)
+            CreateCustomCategory(admin.Id, "Consulting", CategoryType.Income, now),
+            CreateCustomCategory(admin.Id, "Subscriptions", CategoryType.Expense, now)
         };
 
-        var categoryMap = categories.ToDictionary(
-            x => (x.UserId, x.Name, x.Type),
-            x => x);
+        var availableCategories = existingCategories
+            .Concat(customCategories)
+            .ToList();
 
         var transactions = new[]
         {
-            CreateTransaction(admin.Id, adminWallet, categoryMap[(admin.Id, "Consulting", CategoryType.Income)], CategoryType.Income, 1500m, now.AddDays(-12), "Monthly retainer"),
-            CreateTransaction(admin.Id, adminWallet, categoryMap[(admin.Id, "Subscriptions", CategoryType.Expense)], CategoryType.Expense, 99m, now.AddDays(-10), "Tooling stack"),
+            CreateTransaction(admin.Id, adminWallet, FindCategory(availableCategories, admin.Id, "Consulting", CategoryType.Income), CategoryType.Income, 1500m, now.AddDays(-12), "Monthly retainer"),
+            CreateTransaction(admin.Id, adminWallet, FindCategory(availableCategories, admin.Id, "Subscriptions", CategoryType.Expense), CategoryType.Expense, 99m, now.AddDays(-10), "Tooling stack"),
 
-            CreateTransaction(alice.Id, aliceMainWallet, categoryMap[(alice.Id, "Salary", CategoryType.Income)], CategoryType.Income, 3200m, now.AddDays(-15), "March salary"),
-            CreateTransaction(alice.Id, aliceMainWallet, categoryMap[(alice.Id, "Groceries", CategoryType.Expense)], CategoryType.Expense, 180.45m, now.AddDays(-9), "Weekly groceries"),
-            CreateTransaction(alice.Id, aliceMainWallet, categoryMap[(alice.Id, "Rent", CategoryType.Expense)], CategoryType.Expense, 1100m, now.AddDays(-7), "Apartment rent"),
-            CreateTransaction(alice.Id, aliceMainWallet, categoryMap[(alice.Id, "Transport", CategoryType.Expense)], CategoryType.Expense, 62.30m, now.AddDays(-4), "Metro card top up"),
-            CreateTransaction(alice.Id, aliceSavingsWallet, categoryMap[(alice.Id, "Freelance", CategoryType.Income)], CategoryType.Income, 850m, now.AddDays(-6), "Landing page project"),
+            CreateTransaction(alice.Id, aliceMainWallet, FindCategory(availableCategories, alice.Id, "Salary", CategoryType.Income), CategoryType.Income, 3200m, now.AddDays(-15), "March salary"),
+            CreateTransaction(alice.Id, aliceMainWallet, FindCategory(availableCategories, alice.Id, "Groceries", CategoryType.Expense), CategoryType.Expense, 180.45m, now.AddDays(-9), "Weekly groceries"),
+            CreateTransaction(alice.Id, aliceMainWallet, FindCategory(availableCategories, alice.Id, "Rent", CategoryType.Expense), CategoryType.Expense, 1100m, now.AddDays(-7), "Apartment rent"),
+            CreateTransaction(alice.Id, aliceMainWallet, FindCategory(availableCategories, alice.Id, "Transport", CategoryType.Expense), CategoryType.Expense, 62.30m, now.AddDays(-4), "Metro card top up"),
+            CreateTransaction(alice.Id, aliceSavingsWallet, FindCategory(availableCategories, alice.Id, "Freelance", CategoryType.Income), CategoryType.Income, 850m, now.AddDays(-6), "Landing page project"),
 
-            CreateTransaction(bob.Id, bobMainWallet, categoryMap[(bob.Id, "Salary", CategoryType.Income)], CategoryType.Income, 2400m, now.AddDays(-14), "Monthly salary"),
-            CreateTransaction(bob.Id, bobMainWallet, categoryMap[(bob.Id, "Travel", CategoryType.Expense)], CategoryType.Expense, 420m, now.AddDays(-8), "Train tickets"),
-            CreateTransaction(bob.Id, bobMainWallet, categoryMap[(bob.Id, "Food", CategoryType.Expense)], CategoryType.Expense, 95.25m, now.AddDays(-3), "Restaurant and groceries"),
-            CreateTransaction(bob.Id, bobCashWallet, categoryMap[(bob.Id, "Bonus", CategoryType.Income)], CategoryType.Income, 300m, now.AddDays(-5), "Project completion bonus")
+            CreateTransaction(bob.Id, bobMainWallet, FindCategory(availableCategories, bob.Id, "Salary", CategoryType.Income), CategoryType.Income, 2400m, now.AddDays(-14), "Monthly salary"),
+            CreateTransaction(bob.Id, bobMainWallet, FindCategory(availableCategories, bob.Id, "Travel", CategoryType.Expense), CategoryType.Expense, 420m, now.AddDays(-8), "Train tickets"),
+            CreateTransaction(bob.Id, bobMainWallet, FindCategory(availableCategories, bob.Id, "Food", CategoryType.Expense), CategoryType.Expense, 95.25m, now.AddDays(-3), "Restaurant and groceries"),
+            CreateTransaction(bob.Id, bobCashWallet, FindCategory(availableCategories, bob.Id, "Bonus", CategoryType.Income), CategoryType.Income, 300m, now.AddDays(-5), "Project completion bonus")
         };
 
         _dbContext.Users.AddRange(users);
         _dbContext.Wallets.AddRange(wallets);
-        _dbContext.Categories.AddRange(categories);
+        _dbContext.Categories.AddRange(customCategories);
         _dbContext.Transactions.AddRange(transactions);
         _dbContext.AuditLogs.Add(new AuditLog(
             admin.Id,
@@ -124,16 +120,45 @@ public sealed class AppDbInitializer
         return user;
     }
 
-    private static Category CreateCategory(Guid userId, string name, CategoryType type, DateTime createdAtUtc)
+    private async Task EnsureDefaultCategoriesAsync(CancellationToken cancellationToken)
     {
-        return new Category
+        var existingDefaultKeys = await _dbContext.Categories
+            .AsNoTracking()
+            .Where(x => x.IsDefault)
+            .Select(x => new ValueTuple<string, CategoryType>(x.Name, x.Type))
+            .ToListAsync(cancellationToken);
+
+        var existingDefaultKeySet = existingDefaultKeys
+            .ToHashSet();
+
+        var missingDefaults = DefaultCategoryFactory.CreateDefaults(DateTime.UtcNow)
+            .Where(x => !existingDefaultKeySet.Contains((x.Name, x.Type)))
+            .ToArray();
+
+        if (missingDefaults.Length == 0)
         {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Name = name,
-            Type = type,
-            CreatedAtUtc = createdAtUtc
-        };
+            return;
+        }
+
+        _dbContext.Categories.AddRange(missingDefaults);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static Category CreateCustomCategory(Guid userId, string name, CategoryType type, DateTime createdAtUtc)
+    {
+        return DefaultCategoryFactory.CreateCustom(userId, name, type, createdAtUtc);
+    }
+
+    private static Category FindCategory(
+        IEnumerable<Category> categories,
+        Guid userId,
+        string name,
+        CategoryType type)
+    {
+        return categories.First(x =>
+            x.Name == name
+            && x.Type == type
+            && (x.UserId == userId || x.IsDefault));
     }
 
     private static Transaction CreateTransaction(

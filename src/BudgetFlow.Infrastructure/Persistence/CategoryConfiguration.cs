@@ -19,16 +19,25 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(x => x.Type)
             .IsRequired();
 
+        builder.Property(x => x.IsDefault)
+            .IsRequired();
+
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
 
         builder.HasOne(x => x.User)
             .WithMany(x => x.Categories)
             .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(false);
 
         builder.HasIndex(x => x.UserId);
         builder.HasIndex(x => new { x.UserId, x.Name, x.Type })
+            .HasFilter("\"UserId\" IS NOT NULL")
+            .IsUnique();
+
+        builder.HasIndex(x => new { x.Name, x.Type })
+            .HasFilter("\"IsDefault\" = TRUE")
             .IsUnique();
     }
 }
