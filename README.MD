@@ -114,6 +114,16 @@ Run the API:
 dotnet run --project src/BudgetFlow.Api
 ```
 
+On first startup, the app applies EF Core migrations and seeds demo data if the database has no users yet.
+
+Demo credentials:
+
+- Admin: `admin@budgetflow.local` / `Admin123!`
+- User: `alice@budgetflow.local` / `User123!`
+- User: `bob@budgetflow.local` / `User123!`
+
+The demo seed also creates sample wallets, categories, and transactions so dashboards and filtered transaction queries have useful data immediately.
+
 ## Environment Variables
 
 Example values are provided in `.env.example`:
@@ -171,4 +181,3 @@ There is also a ready-to-use request file for IDE-based API testing:
 - EF Core is used directly in infrastructure services
 - Audit logs are written for important auth, wallet, user, and transaction actions
 - Global exception middleware is configured in the API project
-

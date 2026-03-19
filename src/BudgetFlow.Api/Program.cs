@@ -63,6 +63,8 @@ try
 
     var app = builder.Build();
 
+    await app.Services.InitializeDatabaseAsync();
+
     app.UseSerilogRequestLogging(options =>
     {
         options.MessageTemplate =
