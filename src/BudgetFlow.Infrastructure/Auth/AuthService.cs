@@ -98,7 +98,7 @@ public sealed class AuthService : IAuthService
 
         var passwordIsValid = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
-        if (passwordIsValid == PasswordVerificationResult.Failed || passwordIsValid == PasswordVerificationResult.SuccessRehashNeeded)
+        if (passwordIsValid == PasswordVerificationResult.Failed)
         {
             await AddAuditLogAsync(
                 user.Id,
@@ -107,6 +107,11 @@ public sealed class AuthService : IAuthService
                 $"Login failed for '{normalizedEmail}': invalid password.",
                 cancellationToken);
             throw new UnauthorizedAccessException("Invalid password.");
+        }
+
+        if (passwordIsValid == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            user.SetPasswordHash(_passwordHasher.HashPassword(user, request.Password));
         }
 
         var accessToken = _tokenService.GenerateAccessToken(user);
