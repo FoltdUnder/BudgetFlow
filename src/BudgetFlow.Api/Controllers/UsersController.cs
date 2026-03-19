@@ -46,7 +46,15 @@ public sealed class UsersController : ControllerBase
         [FromBody] ChangeUserRoleRequest request,
         CancellationToken cancellationToken)
     {
-        await _userService.ChangeRoleAsync(id, request.Role, cancellationToken);
+        var actorUserIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(actorUserIdValue, out var actorUserId))
+        {
+            return Unauthorized();
+        }
+
+        await _userService.ChangeRoleAsync(actorUserId, id, request.Role, cancellationToken);
+
         return NoContent();
     }
 
@@ -56,7 +64,15 @@ public sealed class UsersController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        await _userService.BlockAsync(id, cancellationToken);
+        var actorUserIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(actorUserIdValue, out var actorUserId))
+        {
+            return Unauthorized();
+        }
+
+        await _userService.BlockAsync(actorUserId, id, cancellationToken);
+
         return NoContent();
     }
 
@@ -66,7 +82,15 @@ public sealed class UsersController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        await _userService.UnblockAsync(id, cancellationToken);
+        var actorUserIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(actorUserIdValue, out var actorUserId))
+        {
+            return Unauthorized();
+        }
+
+        await _userService.UnblockAsync(actorUserId, id, cancellationToken);
+
         return NoContent();
     }
 

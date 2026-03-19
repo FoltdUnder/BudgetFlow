@@ -30,7 +30,7 @@ public sealed class UserService : IUserService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task ChangeRoleAsync(Guid userId, string role, CancellationToken cancellationToken)
+    public async Task ChangeRoleAsync(Guid actorUserId, Guid userId, string role, CancellationToken cancellationToken)
     {
         if (role is not Roles.User && role is not Roles.Admin)
         {
@@ -41,7 +41,7 @@ public sealed class UserService : IUserService
 
         user.ChangeRole(role);
         _dbContext.AuditLogs.Add(new AuditLog(
-            user.Id,
+            actorUserId,
             "user_role_changed",
             nameof(User),
             user.Id,
@@ -49,13 +49,13 @@ public sealed class UserService : IUserService
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task BlockAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task BlockAsync(Guid actorUserId, Guid userId, CancellationToken cancellationToken)
     {
         var user = await GetUserAsync(userId, cancellationToken);
 
         user.Block();
         _dbContext.AuditLogs.Add(new AuditLog(
-            user.Id,
+            actorUserId,
             "user_blocked",
             nameof(User),
             user.Id,
@@ -63,13 +63,13 @@ public sealed class UserService : IUserService
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UnblockAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task UnblockAsync(Guid actorUserId, Guid userId, CancellationToken cancellationToken)
     {
         var user = await GetUserAsync(userId, cancellationToken);
 
         user.Unblock();
         _dbContext.AuditLogs.Add(new AuditLog(
-            user.Id,
+            actorUserId,
             "user_unblocked",
             nameof(User),
             user.Id,
