@@ -3,6 +3,7 @@ using BudgetFlow.Domain.Types;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace BudgetFlow.Infrastructure.Persistence;
 
@@ -11,20 +12,29 @@ public sealed class AppDbInitializer
     private readonly AppDbContext _dbContext;
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly ILogger<AppDbInitializer> _logger;
+    private readonly DemoDataOptions _demoDataOptions;
 
     public AppDbInitializer(
         AppDbContext dbContext,
         IPasswordHasher<User> passwordHasher,
-        ILogger<AppDbInitializer> logger)
+        ILogger<AppDbInitializer> logger,
+        IOptions<DemoDataOptions> demoDataOptions)
     {
         _dbContext = dbContext;
         _passwordHasher = passwordHasher;
         _logger = logger;
+        _demoDataOptions = demoDataOptions.Value;
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await _dbContext.Database.MigrateAsync(cancellationToken);
+
+        if (!_demoDataOptions.Enabled)
+        {
+            _logger.LogInformation("Demo data seeding is disabled.");
+            return;
+        }
 
         if (await _dbContext.Users.AnyAsync(cancellationToken))
         {
