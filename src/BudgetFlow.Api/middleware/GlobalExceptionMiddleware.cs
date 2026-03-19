@@ -75,9 +75,9 @@ public sealed class GlobalExceptionMiddleware
                 "business_rule_conflict",
                 exception.Message),
             UnauthorizedAccessException => (
-                StatusCodes.Status403Forbidden,
-                "access_denied",
-                "Access denied."),
+                StatusCodes.Status401Unauthorized,
+                "unauthorized",
+                exception.Message),
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "internal_server_error",
