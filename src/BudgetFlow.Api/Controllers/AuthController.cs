@@ -58,4 +58,14 @@ public sealed class AuthController : ControllerBase
         await authService.RegisterAsync(request, cancellationToken);
         return StatusCode(StatusCodes.Status201Created);
     }
+
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        return Ok(new
+        {
+            UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+            Roles = User.FindAll(System.Security.Claims.ClaimTypes.Role)
+        });
+    }
 }
