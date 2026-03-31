@@ -146,8 +146,11 @@ public sealed class AuthService : IAuthService
         if (existingRefreshToken is null)
             throw new UnauthorizedAccessException("Invalid refresh token.");
 
-        if (!existingRefreshToken.IsActive)
-            throw new UnauthorizedAccessException("Refresh token is expired or revoked.");
+        if (existingRefreshToken.IsExpired)
+            throw new ExpiredRefreshTokenException("Refresh token has expired.");
+
+        if (existingRefreshToken.IsRevoked)
+            throw new UnauthorizedAccessException("Refresh token is revoked.");
 
         if (existingRefreshToken.User.IsBlocked)
         {

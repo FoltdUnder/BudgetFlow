@@ -74,6 +74,10 @@ public sealed class GlobalExceptionMiddleware
                 StatusCodes.Status409Conflict,
                 "business_rule_conflict",
                 exception.Message),
+            ExpiredRefreshTokenException => (
+                StatusCodes.Status401Unauthorized,
+                "refresh_token_expired",
+                exception.Message),
             UnauthorizedAccessException => (
                 StatusCodes.Status401Unauthorized,
                 "unauthorized",

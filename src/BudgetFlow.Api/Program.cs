@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using BudgetFlow.Infrastructure.Auth;
 using BudgetFlow.Domain.Entities;
+using BudgetFlow.Api.Common;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -49,6 +50,12 @@ try
 
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = JwtAuthErrorResponseWriter.HandleAuthenticationFailedAsync,
+                OnChallenge = JwtAuthErrorResponseWriter.HandleChallengeAsync
             };
         });
 

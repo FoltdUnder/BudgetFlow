@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\BudgetFlow.Api\BudgetFlow.Api.csproj" />
     <ProjectReference Include="..\..\src\BudgetFlow.Application\BudgetFlow.Application.csproj" />
     <ProjectReference Include="..\..\src\BudgetFlow.Domain\BudgetFlow.Domain.csproj" />
     <ProjectReference Include="..\..\src\BudgetFlow.Infrastructure\BudgetFlow.Infrastructure.csproj" />
