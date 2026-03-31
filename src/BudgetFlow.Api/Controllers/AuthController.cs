@@ -1,7 +1,7 @@
 using BudgetFlow.Application.Authentication.Models;
 using BudgetFlow.Application.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using BudgetFlow.Api.Contracts.Auth;
+using BudgetFlow.Api.Common;
 
 namespace BudgetFlow.Api.Controllers;
 
@@ -10,10 +10,14 @@ namespace BudgetFlow.Api.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly RefreshTokenCookieManager _refreshTokenCookieManager;
 
-    public AuthController(IAuthService authService)
+    public AuthController(
+        IAuthService authService,
+        RefreshTokenCookieManager refreshTokenCookieManager)
     {
         _authService = authService;
+        _refreshTokenCookieManager = refreshTokenCookieManager;
     }
 
     [HttpPost("login")]
@@ -25,38 +29,47 @@ public sealed class AuthController : ControllerBase
             new LoginRequest(request.Email, request.Password),
             cancellationToken);
 
-        return Ok(new AuthResponse(result.AccessToken, result.RefreshToken));
+        _refreshTokenCookieManager.AppendRefreshTokenCookie(HttpContext, result.RefreshToken);
+
+        return Ok(new AuthResponse(result.AccessToken));
     }
 
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(
-        RefreshTokenRequest request,
         CancellationToken cancellationToken)
     {
+        var refreshToken = GetRefreshTokenFromCookie();
         var result = await _authService.RefreshAsync(
-            request.RefreshToken,
+            refreshToken,
             cancellationToken);
 
-        return Ok(new AuthResponse(result.AccessToken, result.RefreshToken));
+        _refreshTokenCookieManager.AppendRefreshTokenCookie(HttpContext, result.RefreshToken);
+
+        return Ok(new AuthResponse(result.AccessToken));
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout(
-        RefreshTokenRequest request,
         CancellationToken cancellationToken)
     {
-        await _authService.LogoutAsync(request.RefreshToken, cancellationToken);
+        if (_refreshTokenCookieManager.TryGetRefreshToken(Request, out var refreshToken))
+        {
+            await _authService.LogoutAsync(refreshToken, cancellationToken);
+        }
+
+        _refreshTokenCookieManager.DeleteRefreshTokenCookie(HttpContext);
         return NoContent();
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(
         [FromBody] RegisterRequest request,
-        [FromServices] IAuthService authService,
         CancellationToken cancellationToken)
     {
-        await authService.RegisterAsync(request, cancellationToken);
-        return StatusCode(StatusCodes.Status201Created);
+        var result = await _authService.RegisterAsync(request, cancellationToken);
+        _refreshTokenCookieManager.AppendRefreshTokenCookie(HttpContext, result.RefreshToken);
+
+        return StatusCode(StatusCodes.Status201Created, new AuthResponse(result.AccessToken));
     }
 
     [HttpGet("me")]
@@ -67,5 +80,15 @@ public sealed class AuthController : ControllerBase
             UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
             Roles = User.FindAll(System.Security.Claims.ClaimTypes.Role)
         });
+    }
+
+    private string GetRefreshTokenFromCookie()
+    {
+        if (_refreshTokenCookieManager.TryGetRefreshToken(Request, out var refreshToken))
+        {
+            return refreshToken;
+        }
+
+        throw new UnauthorizedAccessException("Refresh token is missing.");
     }
 }

@@ -5,3 +5,5 @@ obj/
 
 .dotnet
 .idea
+
+.publish-check

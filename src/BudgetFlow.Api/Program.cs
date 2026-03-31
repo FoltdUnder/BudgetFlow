@@ -24,6 +24,7 @@ try
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddControllers();
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+    builder.Services.AddScoped<RefreshTokenCookieManager>();
 
     builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));

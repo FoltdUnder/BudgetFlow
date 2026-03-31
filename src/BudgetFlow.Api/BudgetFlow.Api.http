@@ -1,6 +1,5 @@
 @host = http://localhost:8080
 @accessToken = paste-access-token
-@refreshToken = paste-refresh-token
 
 ### Register
 POST {{host}}/api/auth/register
@@ -29,11 +28,10 @@ Content-Type: application/json
 
 ### Refresh
 POST {{host}}/api/auth/refresh
-Content-Type: application/json
+###
 
-{
-  "refreshToken": "{{refreshToken}}"
-}
+### Logout
+POST {{host}}/api/auth/logout
 ###
 
 ### test me

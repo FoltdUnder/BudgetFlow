@@ -33,7 +33,9 @@ public sealed class AuthService : IAuthService
         _logger = logger;
     }
 
-    public async Task RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<(string AccessToken, string RefreshToken)> RegisterAsync(
+        RegisterRequest request,
+        CancellationToken cancellationToken)
     {
         ValidateRegisterRequest(request);
 
@@ -60,6 +62,8 @@ public sealed class AuthService : IAuthService
             user.Id,
             $"User '{normalizedEmail}' registered."));
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return await IssueTokensAsync(user, normalizedEmail, cancellationToken);
     }
 
     public async Task<(string AccessToken, string RefreshToken)> LoginAsync(
@@ -114,25 +118,7 @@ public sealed class AuthService : IAuthService
             user.SetPasswordHash(_passwordHasher.HashPassword(user, request.Password));
         }
 
-        var accessToken = _tokenService.GenerateAccessToken(user);
-        var refreshTokenValue = _tokenService.GenerateRefreshToken();
-
-        var refreshToken = new RefreshToken(
-            user.Id,
-            refreshTokenValue,
-            DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays));
-
-        _dbContext.RefreshTokens.Add(refreshToken);
-        _dbContext.AuditLogs.Add(new AuditLog(
-            user.Id,
-            "login_succeeded",
-            nameof(User),
-            user.Id,
-            $"User '{normalizedEmail}' signed in."));
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return (accessToken, refreshTokenValue);
+        return await IssueTokensAsync(user, normalizedEmail, cancellationToken);
     }
 
     public async Task<(string AccessToken, string RefreshToken)> RefreshAsync(
@@ -254,5 +240,31 @@ public sealed class AuthService : IAuthService
             entityId,
             description));
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<(string AccessToken, string RefreshToken)> IssueTokensAsync(
+        User user,
+        string normalizedEmail,
+        CancellationToken cancellationToken)
+    {
+        var accessToken = _tokenService.GenerateAccessToken(user);
+        var refreshTokenValue = _tokenService.GenerateRefreshToken();
+
+        var refreshToken = new RefreshToken(
+            user.Id,
+            refreshTokenValue,
+            DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays));
+
+        _dbContext.RefreshTokens.Add(refreshToken);
+        _dbContext.AuditLogs.Add(new AuditLog(
+            user.Id,
+            "login_succeeded",
+            nameof(User),
+            user.Id,
+            $"User '{normalizedEmail}' signed in."));
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return (accessToken, refreshTokenValue);
     }
 }

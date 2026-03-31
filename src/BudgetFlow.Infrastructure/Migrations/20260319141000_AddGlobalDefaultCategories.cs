@@ -98,3 +98,4 @@ namespace BudgetFlow.Infrastructure.Migrations
                 onDelete: ReferentialAction.Cascade);
         }
     }
+}

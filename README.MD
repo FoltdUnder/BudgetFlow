@@ -185,7 +185,9 @@ There is also a ready-to-use request file for IDE-based API testing:
 - Most endpoints require a Bearer token
 - `UserOnly` policy allows both `User` and `Admin`
 - `AdminOnly` policy allows only `Admin`
-- Access tokens and refresh tokens are issued through `/api/auth/login`
+- The frontend should send the access token in the `Authorization: Bearer ...` header
+- `/api/auth/login`, `/api/auth/register`, and `/api/auth/refresh` return only the access token in the response body
+- Refresh tokens are stored in an `HttpOnly` cookie and are used automatically by `/api/auth/refresh` and `/api/auth/logout`
 
 ## Current Architecture Notes
 

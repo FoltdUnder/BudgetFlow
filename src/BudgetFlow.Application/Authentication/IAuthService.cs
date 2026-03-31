@@ -16,5 +16,7 @@ public interface IAuthService
         string refreshToken,
         CancellationToken cancellationToken);
 
-    Task RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
+    Task<(string AccessToken, string RefreshToken)> RegisterAsync(
+        RegisterRequest request,
+        CancellationToken cancellationToken);
 }
