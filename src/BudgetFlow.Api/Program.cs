@@ -9,6 +9,8 @@ using BudgetFlow.Infrastructure.Auth;
 using BudgetFlow.Domain.Entities;
 using BudgetFlow.Api.Common;
 
+const string FrontendCorsPolicy = "FrontendCors";
+
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.Console()
@@ -25,6 +27,22 @@ try
     builder.Services.AddControllers();
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
     builder.Services.AddScoped<RefreshTokenCookieManager>();
+
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(FrontendCorsPolicy, policy =>
+        {
+            if (allowedOrigins is { Length: > 0 })
+            {
+                policy.WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            }
+        });
+    });
 
     builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
@@ -88,6 +106,7 @@ try
 
     app.UseHttpsRedirection();
 
+    app.UseCors(FrontendCorsPolicy);
     app.UseAuthentication();
     app.UseAuthorization();
 
