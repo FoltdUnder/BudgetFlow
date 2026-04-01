@@ -1,10 +1,14 @@
 using System;
+using BudgetFlow.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace BudgetFlow.Infrastructure.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260319141000_AddGlobalDefaultCategories")]
     public partial class AddGlobalDefaultCategories : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
