@@ -98,6 +98,11 @@ Supported filters:
 docker compose up --build
 ```
 
+On api source code change
+```powershell
+docker compose up --build --force-recreate budgetflow.api
+```
+
 Services:
 
 - API: `http://localhost:8080`
