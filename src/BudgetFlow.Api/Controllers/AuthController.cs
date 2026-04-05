@@ -1,7 +1,11 @@
 using BudgetFlow.Application.Authentication.Models;
 using BudgetFlow.Application.Authentication;
+using BudgetFlow.Application.AuditLogs;
+using BudgetFlow.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using BudgetFlow.Api.Common;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace BudgetFlow.Api.Controllers;
 
@@ -73,12 +77,21 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpGet("me")]
-    public IActionResult Me()
+    [Authorize(Policy = "UserOnly")]
+    public async Task<IActionResult> Me(CancellationToken cancellationToken)
     {
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var roles = User.FindAll(ClaimTypes.Role).Select(x => x.Value).ToArray();
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
         return Ok(new
         {
-            UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
-            Roles = User.FindAll(System.Security.Claims.ClaimTypes.Role)
+            userId,
+            roles
         });
     }
 
