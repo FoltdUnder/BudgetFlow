@@ -83,6 +83,11 @@ Supported filters:
 - `GET /api/dashboard` current user dashboard
 - `GET /api/dashboard/admin` admin system totals
 
+Dashboard controller notes:
+
+- `GET /api/dashboard` requires the `UserOnly` policy and returns the authenticated user's dashboard data
+- `GET /api/dashboard/admin` requires the `AdminOnly` policy and returns aggregated admin dashboard totals
+
 ### Audit Logs
 
 - `GET /api/audit-logs/recent?limit=20` admin only
