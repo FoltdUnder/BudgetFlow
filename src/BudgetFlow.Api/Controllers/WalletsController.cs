@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using BudgetFlow.Application.Wallets;
+using BudgetFlow.Api.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,7 @@ namespace BudgetFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/wallets")]
-[Authorize(Policy = "UserOnly")]
+[Authorize(Policy = AuthorizationPolicyNames.UserOnly)]
 public sealed class WalletsController : ControllerBase
 {
     private readonly IWalletService _walletService;

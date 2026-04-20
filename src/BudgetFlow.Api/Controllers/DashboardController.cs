@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using BudgetFlow.Application.Dashboard;
+using BudgetFlow.Api.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,7 @@ namespace BudgetFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-[Authorize(Policy = "UserOnly")]
+[Authorize(Policy = AuthorizationPolicyNames.UserOnly)]
 public sealed class DashboardController : ControllerBase
 {
     private readonly IUserDashboardService _dashboardService;
@@ -36,7 +37,7 @@ public sealed class DashboardController : ControllerBase
     }
 
     [HttpGet("admin")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthorizationPolicyNames.AdminOnly)]
     public async Task<IActionResult> GetAdmin(CancellationToken cancellationToken)
     {
         var dashboard = await _adminDashboardService.GetAsync(cancellationToken);

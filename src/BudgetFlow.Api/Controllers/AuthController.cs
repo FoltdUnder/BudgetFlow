@@ -77,7 +77,7 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpGet("me")]
-    [Authorize(Policy = "UserOnly")]
+    [Authorize(Policy = AuthorizationPolicyNames.UserOnly)]
     public async Task<IActionResult> Me(CancellationToken cancellationToken)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);

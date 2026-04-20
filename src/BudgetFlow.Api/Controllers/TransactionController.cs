@@ -1,3 +1,4 @@
+using BudgetFlow.Api.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BudgetFlow.Application.Transactions;
@@ -7,7 +8,7 @@ namespace BudgetFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/transactions")]
-[Authorize(Policy = "UserOnly")]
+[Authorize(Policy = AuthorizationPolicyNames.UserOnly)]
 public sealed class TransactionController : ControllerBase
 {
     private readonly ITransactionService _transactionService;

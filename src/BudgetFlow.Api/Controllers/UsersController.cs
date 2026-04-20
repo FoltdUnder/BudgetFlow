@@ -1,4 +1,5 @@
 using BudgetFlow.Application.Users;
+using BudgetFlow.Api.Common;
 using BudgetFlow.Api.Contracts;
 using BudgetFlow.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpGet("me")]
-    [Authorize(Policy = "UserOnly")]
+    [Authorize(Policy = AuthorizationPolicyNames.UserOnly)]
     public IActionResult Me()
     {
         return Ok(new
@@ -32,7 +33,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthorizationPolicyNames.AdminOnly)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var users = await _userService.GetAllAsync(cancellationToken);
@@ -40,7 +41,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPut("{id:guid}/role")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthorizationPolicyNames.AdminOnly)]
     public async Task<IActionResult> ChangeRole(
         Guid id,
         [FromBody] ChangeUserRoleRequest request,
@@ -59,7 +60,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPut("{id:guid}/block")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthorizationPolicyNames.AdminOnly)]
     public async Task<IActionResult> Block(
         Guid id,
         CancellationToken cancellationToken)
@@ -77,7 +78,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPut("{id:guid}/unblock")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthorizationPolicyNames.AdminOnly)]
     public async Task<IActionResult> Unblock(
         Guid id,
         CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
 using BudgetFlow.Application.AuditLogs;
+using BudgetFlow.Api.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +7,7 @@ namespace BudgetFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/audit-logs")]
-[Authorize(Policy = "AdminOnly")]
+[Authorize(Policy = AuthorizationPolicyNames.AdminOnly)]
 public sealed class AuditLogsController : ControllerBase
 {
     private readonly IAuditLogService _auditLogService;
