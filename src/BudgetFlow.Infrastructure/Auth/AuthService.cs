@@ -148,17 +148,17 @@ public sealed class AuthService : IAuthService
         existingRefreshToken.Revoke();
 
         var newAccessToken = _tokenService.GenerateAccessToken(existingRefreshToken.User);
-        var newRefreshTokenValue = _tokenService.GenerateRefreshToken();
+        var newRefreshTokenString = _tokenService.GenerateRefreshToken();
 
-        var newRefreshToken = new RefreshToken(
+        var newRefreshTokenEntity = new RefreshToken(
             existingRefreshToken.UserId,
-            newRefreshTokenValue,
+            newRefreshTokenString,
             DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays));
 
-        _dbContext.RefreshTokens.Add(newRefreshToken);
+        _dbContext.RefreshTokens.Add(newRefreshTokenEntity);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return (newAccessToken, newRefreshTokenValue);
+        return (newAccessToken, newRefreshTokenString);
     }
 
     public async Task LogoutAsync(
@@ -248,14 +248,14 @@ public sealed class AuthService : IAuthService
         CancellationToken cancellationToken)
     {
         var accessToken = _tokenService.GenerateAccessToken(user);
-        var refreshTokenValue = _tokenService.GenerateRefreshToken();
+        var refreshTokenString = _tokenService.GenerateRefreshToken();
 
-        var refreshToken = new RefreshToken(
+        var refreshTokenEntity = new RefreshToken(
             user.Id,
-            refreshTokenValue,
+            refreshTokenString,
             DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays));
 
-        _dbContext.RefreshTokens.Add(refreshToken);
+        _dbContext.RefreshTokens.Add(refreshTokenEntity);
         _dbContext.AuditLogs.Add(new AuditLog(
             user.Id,
             "login_succeeded",
@@ -265,6 +265,6 @@ public sealed class AuthService : IAuthService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return (accessToken, refreshTokenValue);
+        return (accessToken, refreshTokenString);
     }
 }
