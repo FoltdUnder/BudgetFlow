@@ -1,6 +1,8 @@
 bin/
 obj/
+
 msbuild.log
+test-build*.log
 
 .env
 
