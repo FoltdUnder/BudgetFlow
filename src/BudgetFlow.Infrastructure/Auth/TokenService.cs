@@ -11,6 +11,7 @@ namespace BudgetFlow.Infrastructure.Auth;
 
 public sealed class TokenService : ITokenService
 {
+    private readonly int RefreshTokenByteLength = 64;
     private readonly JwtOptions _jwtOptions;
 
     public TokenService(IOptions<JwtOptions> jwtOptions)
@@ -44,7 +45,7 @@ public sealed class TokenService : ITokenService
 
     public string GenerateRefreshToken()
     {
-        var bytes = RandomNumberGenerator.GetBytes(64);
+        var bytes = RandomNumberGenerator.GetBytes(RefreshTokenByteLength);
         return Convert.ToBase64String(bytes);
     }
 }
